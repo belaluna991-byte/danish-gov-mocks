@@ -1,0 +1,77 @@
+version: '3.8'
+
+services:
+  # Keycloak - MitID OIDC Mock
+  # Provides realistic Danish government authentication with test personas
+  keycloak:
+    image: quay.io/keycloak/keycloak:23.0
+    container_name: danish-gov-keycloak
+    restart: unless-stopped
+    environment:
+      KEYCLOAK_ADMIN: ${KEYCLOAK_ADMIN:-admin}
+      KEYCLOAK_ADMIN_PASSWORD: ${KEYCLOAK_ADMIN_PASSWORD:-admin}
+      KC_HTTP_PORT: 8080
+      KC_HOSTNAME_STRICT: false
+      KC_HOSTNAME_STRICT_HTTPS: false
+      KC_HTTP_ENABLED: true
+      KC_HEALTH_ENABLED: true
+    volumes:
+      - ./keycloak/realms:/opt/keycloak/data/import
+    command:
+      - start-dev
+      - --import-realm
+      - --http-relative-path=/
+    ports:
+      - "${KEYCLOAK_PORT:-8080}:8080"
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8080/health/ready"]
+      interval: 30s
+      timeout: 10s
+      retries: 5
+      start_period: 60s
+    networks:
+      - danish-gov-mocks
+
+  # WireMock - Serviceplatformen SOAP Mock
+  # Mocks CPR lookup (SF1520), CVR lookup (SF1530), and Digital Post (SF1601)
+  wiremock:
+    image: wiremock/wiremock:3.3.1
+    container_name: danish-gov-wiremock
+    restart: unless-stopped
+    volumes:
+      - ./wiremock/mappings:/home/wiremock/mappings
+      - ./wiremock/__files:/home/wiremock/__files
+    command:
+      - --global-response-templating
+      - --verbose
+    ports:
+      - "${WIREMOCK_PORT:-8081}:8080"
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8080/__admin/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 10s
+    networks:
+      - danish-gov-mocks
+
+  # Prism - DAWA Address API Mock
+  # Mocks Danish address autocomplete and validation
+  # Note: Requires dawa-openapi.yaml specification
+  prism:
+    image: stoplight/prism:4
+    container_name: danish-gov-prism
+    restart: unless-stopped
+    volumes:
+      - ./prism:/openapi
+    command: mock -h 0.0.0.0 /openapi/dawa-openapi.yaml
+    ports:
+      - "${PRISM_PORT:-8082}:4010"
+    networks:
+      - danish-gov-mocks
+    profiles:
+      - full
+
+networks:
+  danish-gov-mocks:
+    driver: bridge

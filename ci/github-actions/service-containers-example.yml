@@ -1,0 +1,69 @@
+name: CI with Service Containers
+
+on: [push, pull_request]
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+
+    services:
+      keycloak:
+        image: quay.io/keycloak/keycloak:23.0
+        env:
+          KEYCLOAK_ADMIN: admin
+          KEYCLOAK_ADMIN_PASSWORD: admin
+          KC_HTTP_ENABLED: true
+          KC_HEALTH_ENABLED: true
+          KC_HOSTNAME_STRICT: false
+        ports:
+          - 8080:8080
+        options: >-
+          --health-cmd "curl -f http://localhost:8080/health/ready || exit 1"
+          --health-interval 30s
+          --health-timeout 10s
+          --health-retries 10
+          --health-start-period 60s
+
+      wiremock:
+        image: wiremock/wiremock:3.3.1
+        ports:
+          - 8081:8080
+        options: >-
+          --health-cmd "curl -f http://localhost:8080/__admin/health || exit 1"
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Copy Keycloak realm to container
+        run: |
+          docker cp keycloak/realms/danish-gov-test.json $(docker ps -q -f ancestor=quay.io/keycloak/keycloak:23.0):/opt/keycloak/data/import/
+
+      - name: Import Keycloak realm
+        run: |
+          # Trigger realm import (restart container)
+          docker restart $(docker ps -q -f ancestor=quay.io/keycloak/keycloak:23.0)
+          sleep 30
+
+      - name: Copy WireMock stubs to container
+        run: |
+          docker cp wiremock/mappings/. $(docker ps -q -f ancestor=wiremock/wiremock:3.3.1):/home/wiremock/mappings/
+          docker cp wiremock/__files/. $(docker ps -q -f ancestor=wiremock/wiremock:3.3.1):/home/wiremock/__files/
+
+      - name: Verify services
+        run: |
+          curl http://localhost:8080/health/ready
+          curl http://localhost:8081/__admin/health
+
+      - name: Run tests
+        run: |
+          # Your test command here
+          npm test
+
+      - name: Debug on failure
+        if: failure()
+        run: |
+          docker logs $(docker ps -q -f ancestor=quay.io/keycloak/keycloak:23.0)
+          docker logs $(docker ps -q -f ancestor=wiremock/wiremock:3.3.1)

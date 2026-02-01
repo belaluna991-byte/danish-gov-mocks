@@ -1,0 +1,56 @@
+version: '3.8'
+
+# CI-optimized Docker Compose configuration
+# Differences from dev version:
+# - No port publishing (services communicate via internal network)
+# - Reduced resource limits
+# - Faster startup configurations
+
+services:
+  keycloak:
+    image: quay.io/keycloak/keycloak:23.0
+    container_name: ci-keycloak
+    environment:
+      KEYCLOAK_ADMIN: admin
+      KEYCLOAK_ADMIN_PASSWORD: admin
+      KC_HTTP_PORT: 8080
+      KC_HOSTNAME_STRICT: false
+      KC_HTTP_ENABLED: true
+      KC_HEALTH_ENABLED: true
+      JAVA_OPTS: "-Xms256m -Xmx512m"
+    volumes:
+      - ../keycloak/realms:/opt/keycloak/data/import
+    command:
+      - start-dev
+      - --import-realm
+      - --http-relative-path=/
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8080/health/ready"]
+      interval: 15s
+      timeout: 10s
+      retries: 10
+      start_period: 60s
+    networks:
+      - ci-network
+
+  wiremock:
+    image: wiremock/wiremock:3.3.1
+    container_name: ci-wiremock
+    volumes:
+      - ../wiremock/mappings:/home/wiremock/mappings
+      - ../wiremock/__files:/home/wiremock/__files
+    command:
+      - --global-response-templating
+      - --verbose
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8080/__admin/health"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 10s
+    networks:
+      - ci-network
+
+networks:
+  ci-network:
+    driver: bridge

